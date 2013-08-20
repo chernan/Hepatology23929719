@@ -1,0 +1,10 @@
+## In project folder
+
+## Screen 1
+perl ./src/gel_mobility_2-0.pl ./data/4045/proteinGroups.txt 0.5 2.0 56 cmdLines_outputs/4045/filtered_output1.txt
+Rscript ./src/create_slicesilac_images.R ./cmdLines_outputs/4045/filtered_output1.txt output4045_0-5_2-0.png 56 all
+
+## Screen 2
+perl ./src/gel_mobility_2-0.pl ./data/4047/proteinGroups.txt 0.5 2.0 56 cmdLines_outputs/4047/filtered_output2.txt
+Rscript ./src/create_slicesilac_images.R ./cmdLines_outputs/4047/filtered_output2.txt output4047_0-5_2-0.png 56 all
+
