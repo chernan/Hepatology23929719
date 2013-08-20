@@ -43,7 +43,7 @@
 #'    Rscript ./create_slicesilac_images.R ./ProteinGroups_filtered.txt output.png 18 1:2:6:3 
 #' 
 #' Script version : 1.0
-#' Date: 27-May-2011
+#' Date: 22-Aug-2012
 #' Author: Celine Hernandez
 #' Contact: wwwpaf@unil.ch
 #'
@@ -161,16 +161,37 @@ draw.slicesilac <- function(ratios, counts, col=c("black","white"),
 	all_circles_elmts[counts==0] <- NA 
 	#doesn't display a circle if ratio is NA (yes... sometimes 1 count and no ratio)
 	all_circles_elmts[is.na(ratios)] <- NA 
-	#limit upper size of circles
-	max_radius <- rep(0.6, nb_row_values*nb_col_values)
+	#limit upper size of circles for 30 counts
+	max_radius <- rep(sqrt(abs(30/20))/2, nb_row_values*nb_col_values)
 	dim(max_radius) <- dim(counts)
 	all_circles_elmts <- pmin(all_circles_elmts, max_radius)
 	
 	#draw circles
 	symbols(rep(1:nb_col_values, each = nb_row_values), rep(nb_row_values:1, nb_col_values), add = TRUE, inches = F, 
 			circles = as.vector(all_circles_elmts), bg = as.vector(bg))
-	#add legend
+    
+	#add text legend
 	legend(x=-xlabwidth, y=0, legend=legend_str, cex=0.8, bty="n") 
+    
+    #add color legend (plotrix function)
+    text(nb_col_values+0.5, 6, "H/L ratios (log2)", pos=4)
+	col.labels <- ""
+	color.legend(nb_col_values+1.3, 2, nb_col_values+2, 5, col.labels, col, align="rb", gradient="y")
+	col.labels <- c( expression(''<=-1), "0", expression(1<='') )
+	text(c( nb_col_values+2.5, nb_col_values+2.5, nb_col_values+2.5 ),
+	     c( 2, 3.5, 5 ), 
+         col.labels, pos=4)
+	
+    #add size legend
+	text(nb_col_values+0.5, 12, "H/L ratios count", pos=4)
+	symbols(nb_col_values+1.5, 11, add = TRUE, inches = F, circles = sqrt(abs(1/20))/2, bg = "white")
+	text(nb_col_values+2.5, 11, "1", pos=4)
+	symbols(nb_col_values+1.5, 10, add = TRUE, inches = F, circles = sqrt(abs(10/20))/2, bg = "white")
+	text(nb_col_values+2.5, 10, "10", pos=4)
+	symbols(nb_col_values+1.5, 9, add = TRUE, inches = F, circles = sqrt(abs(20/20))/2, bg = "white")
+	text(nb_col_values+2.5, 9, "20", pos=4)
+	symbols(nb_col_values+1.5, 8, add = TRUE, inches = F, circles = sqrt(abs(30/20))/2, bg = "white")
+	text(nb_col_values+2.5, 8, expression(''>=30), pos=4)
 	
 	dev.off() #comment if only pdf
 }
@@ -179,6 +200,7 @@ draw.slicesilac <- function(ratios, counts, col=c("black","white"),
 #'####################################################################################################
 #' Analysis of SliceSILAC data
 
+library("plotrix")
 
 #' read command line arguments
 
@@ -195,9 +217,10 @@ slices_number <- as.numeric(options[3])
 prot_indexes_str <- options[4]
 
 
+
 #' read input file and store the whole protein table in a variable
 
-ProteinGroups <- read.delim(input_file, header=TRUE, sep="\t", fill=TRUE, row.names=1)
+ProteinGroups <- read.delim(input_file, header=TRUE, sep="\t", fill=TRUE, row.names=1, stringsAsFactors=FALSE, na.strings='')
 
 #' select indexes of proteins to be used depending on third argument
 
@@ -220,26 +243,40 @@ if(as.numeric(slices_number) > 9) {
 
 #' select important informations from the protein table
 
-# Protein names (limited to first 100 characters) for the legend
+# Protein names (limited until first ';' character) for the legend
 interesting_colnames_names <- c("Protein.Names") 
 ProteinGroups_names <- 
 		subset(ProteinGroups,
 				TRUE,
 				select = interesting_colnames_names
 		)
-temp_names <- ProteinGroups_names[prot_indexes[[1]],]
-temp_names <- paste(prot_indexes[[1]], substr(temp_names, 0, 100),"...")
+temp_names <- as.matrix(ProteinGroups_names[prot_indexes[[1]],])
+temp_names <- apply(temp_names, 1, 
+                    function (x) {
+                        if(is.na(x)) { as.character(x)}
+                        else {
+                            matches <- as.matrix(regexpr(";", x))
+                            if(matches[1,1]!=-1) {
+                                paste(substr(x, 0, matches[1]), "...")
+                            }
+                            else {
+                                as.character(x)
+                            }
+                        }
+                    }
+                    )
+temp_names <- paste(prot_indexes[[1]], temp_names)
 subset_ProteinGroups_names <- as.matrix(t(temp_names ) )
 
 # Ratios for the color of circles
 interesting_colnames_ratios <- paste("Ratio.H.L.Normalized.band",slices_list, sep="") 
-ProteinGroups_ratios <- 
+ProteinGroups_ratios <-
 		subset(ProteinGroups,
 				TRUE,
 				select = interesting_colnames_ratios
 		)
 subset_ProteinGroups_ratios <- as.matrix(t( ProteinGroups_ratios[prot_indexes[[1]],]) )
-subset_ProteinGroups_ratios <- round(subset_ProteinGroups_ratios,3)-1
+subset_ProteinGroups_ratios <- log2(round(subset_ProteinGroups_ratios,3))
 
 ## Counts for the radius of circles
 interesting_colnames_counts <- paste("Ratio.H.L.Count.band",slices_list, sep="") 

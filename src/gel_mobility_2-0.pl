@@ -51,6 +51,12 @@ $index = 0;
 
 #read all input file
 @roba = <INPUTF>;
+print OUTPUTFC "Input file : \t","$tabfile\n";
+print OUTPUTFC "Less value : \t","$less_value\n";
+print OUTPUTFC "More value : \t","$more_value\n";
+print OUTPUTFC "Number of slices : \t","$slice_nb\n";
+print OUTPUTFC "Output file : \t","$output_filename\n";
+
 
 foreach $line (@roba) {
 	chomp($line);
