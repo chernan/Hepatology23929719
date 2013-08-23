@@ -1,11 +1,29 @@
 ## In project folder
 
+##########################
+# Command lines using files after 'unknown' filtering
+
 ## Screen 1
-perl ./src/gel_mobility_2-0.pl ./data/4045/proteinGroups.txt 0.5 2.0 63 cmdLines_outputs/4045/filtered_output1.txt
-Rscript ./src/create_slicesilac_images.R ./cmdLines_outputs/4045/filtered_output1.txt output4045_0-5_1-0.png 63 all
+perl ./src/gel_mobility_2-0.pl ./data/4045/proteinGroups_filtered.txt 0.8 1.2 64 filtered_output_4045_0-8_1-2.txt
+
+Rscript ./src/create_slicesilac_images.R ./data/4045/filtered_output.txt output.png 64 all
 
 ## Screen 2
-perl ./src/gel_mobility_2-0.pl ./data/4047/proteinGroups.txt 0.5 2.0 56 cmdLines_outputs/4047/filtered_output2.txt
-Rscript ./src/create_slicesilac_images.R ./cmdLines_outputs/4047/filtered_output2.txt output4047_0-5_1-0.png 56 all
+#could not find intermediate file
+#perl ./src/gel_mobility_2-0.pl ./data/4047/proteinGroups_filtered.txt 0.5 2.0 56 filtered_output_4047_0-5_2-0.txt
 
+Rscript ./src/create_slicesilac_images.R ./data/4047/filtered_output.txt output.png 56 all
+
+##########################
+## With my automated preprocessing :
+
+## Screen 1
+Rscript ./src/preprocessing_MQproteinGroups.R ./data/4045/proteinGroups.txt ./proteinGroups_4045_preproc.txt
+perl ./src/gel_mobility_2-0.pl ./proteinGroups_4045_preproc.txt 0.8 1.2 64 filtered_output_4045_0-8_1-2.txt
+Rscript ./src/create_slicesilac_images.R ./filtered_output_4045_0-8_1-2.txt output.png 64 all
+
+## Screen 2
+Rscript ./src/preprocessing_MQproteinGroups.R ./data/4047/proteinGroups.txt ./proteinGroups_4047_preproc.txt
+perl ./src/gel_mobility_2-0.pl ./data/4047/proteinGroups_4047_preproc.txt 0.5 2.0 56 filtered_output_4047_0-5_2-0.txt
+Rscript ./src/create_slicesilac_images.R ./filtered_output_4047_0-5_2-0.txt output.png 56 all
 
